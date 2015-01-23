@@ -90,13 +90,7 @@ module Network.Benchmark.Utils
 #ifdef WITH_CHART
 , writeStatChart
 #endif
-
--- * Configuration Validation Utils
-, validateNonNegative
-, validatePositive
 ) where
-
-import Configuration.Utils (ConfigValidation)
 
 import Control.Applicative
 import Control.Concurrent (threadDelay)
@@ -640,25 +634,4 @@ readSample file = withFile file ReadMode $ fmap V.fromList ∘ go
         else do
             r ← either error fst ∘ T.double <$> T.hGetLine h
             (:) r <$> go h
-
--- -------------------------------------------------------------------------- --
--- Configuration Validation Utils
-
-validateNonNegative
-    ∷ (Ord α, Num α)
-    ⇒ T.Text
-        -- ^ configuration property name that is used in the error message
-    → ConfigValidation α λ
-validateNonNegative configName x =
-    when (x < 0) ∘ throwError $
-        "value for " ⊕ configName ⊕ " must not be negative"
-
-validatePositive
-    ∷ (Ord α, Num α)
-    ⇒ T.Text
-        -- ^ configuration property name that is used in the error message
-    → ConfigValidation α λ
-validatePositive configName x =
-    when (x ≤ 0) ∘ throwError $
-        "value for " ⊕ configName ⊕ " must be positive"
 

@@ -95,7 +95,18 @@ import Network.Benchmark.Logger
 -- What is the benefit here of quantifying over the context?
 --
 newtype TestAction = TestAction
-    { runTestAction ∷ ∀ m . (MonadIO m, MonadBaseControl IO m, MonadError T.Text m, MonadLog T.Text m) ⇒ m () }
+    { runTestAction
+        ∷ ∀ m .
+            ( Functor m
+            , Applicative m
+            , Monad m
+            , MonadIO m
+            , MonadBaseControl IO m
+            , MonadError T.Text m
+            , MonadLog T.Text m
+            )
+        ⇒ m ()
+    }
 
 instance Show TestAction where
     show _ = "testaction"

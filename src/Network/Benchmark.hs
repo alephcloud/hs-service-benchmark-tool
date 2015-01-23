@@ -188,7 +188,7 @@ data TestParams = TestParams
     { _paramThreadCount ∷ !Int
         -- ^ number of concurrent threads
     , _paramThreadDelay ∷ !Int
-        -- ^ delay in the startup of threads
+        -- ^ delay in the startup of threads (in milliseconds)
     , _paramActionCount ∷ !Int
         -- ^ number actions (sequentially) per thread
     , _paramRetryCount ∷ !Int

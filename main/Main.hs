@@ -246,8 +246,9 @@ main = runWithPkgInfoConfiguration mainInfo pkgInfo $ \MainConfiguration{..} →
 
   where
     settings = HTTP.defaultManagerSettings
-        { HTTP.managerResponseTimeout = Just 5000000
-        , HTTP.managerConnCount = 100 -- FIXME (use number of threads + 1)
+        { HTTP.managerConnCount = 100 -- FIXME (use number of threads + 1)
+        , HTTP.managerResponseTimeout = Nothing
+        -- , HTTP.managerResponseTimeout = Just 5000000
         }
 
 -- -------------------------------------------------------------------------- --
@@ -295,8 +296,9 @@ httpRequestThreadAction url i f = withLabel ("function","httpRequestThreadAction
   where
     -- We give every thread its own connection manager
     settings = HTTP.defaultManagerSettings
-        { HTTP.managerResponseTimeout = Just 5000000
-        , HTTP.managerConnCount = 2
+        { HTTP.managerConnCount = 2
+        -- , HTTP.managerResponseTimeout = Just 5000000
+        , HTTP.managerResponseTimeout = Nothing
         }
     req = either (error ∘ show) id ∘ HTTP.parseUrl $ T.unpack url
 

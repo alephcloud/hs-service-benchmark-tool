@@ -28,6 +28,8 @@
 -- queue and a background worker.
 --
 
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE OverlappingInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
@@ -129,6 +131,9 @@ import Control.Lens hiding ((.=))
 import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.Trans.Control
+import Control.Monad.Trans.Either
+import Control.Monad.Trans.State
+import Control.Monad.Trans.Trace
 
 import qualified Data.CaseInsensitive as CI
 import qualified Data.List as L
@@ -604,12 +609,16 @@ instance (NFData a, MonadIO m, MonadReader (LoggerCtx a) m) ⇒ MonadLog a m whe
     {-# INLINE withLevel #-}
     {-# INLINE withLabel #-}
 
--- This requires Overlapping instances .. not sure if it is save
---
--- TODO can be generalized to any transformer with an instance
--- of MonadTransControl
---
-instance MonadLog a m ⇒ MonadLog a (ExceptT β m) where
+instance (NFData a, MonadIO m) ⇒ MonadLog a (ReaderT (LoggerCtx a) m) where
+    logg l m = ask >>= \ctx → liftIO (loggCtx ctx l m)
+    withLevel level = local $ loggerThreshold .~ level
+    withLabel label = local $ loggerScope %~ (:) label
+
+    {-# INLINE logg #-}
+    {-# INLINE withLevel #-}
+    {-# INLINE withLabel #-}
+
+instance MonadLog a m ⇒ MonadLog a (ReaderT σ m) where
     logg l = lift ∘ logg l
     withLevel level inner = liftWith (\run → withLevel level (run inner)) >>= restoreT ∘ return
     withLabel label inner = liftWith (\run → withLabel label (run inner)) >>= restoreT ∘ return
@@ -617,6 +626,56 @@ instance MonadLog a m ⇒ MonadLog a (ExceptT β m) where
     {-# INLINE logg #-}
     {-# INLINE withLevel #-}
     {-# INLINE withLabel #-}
+
+instance (MonadLog a m) ⇒ MonadLog a (ExceptT ε m) where
+    logg l = lift ∘ logg l
+    withLevel level inner = liftWith (\run → withLevel level (run inner)) >>= restoreT ∘ return
+    withLabel label inner = liftWith (\run → withLabel label (run inner)) >>= restoreT ∘ return
+
+    {-# INLINE logg #-}
+    {-# INLINE withLevel #-}
+    {-# INLINE withLabel #-}
+
+instance (MonadLog a m) ⇒ MonadLog a (StateT σ m) where
+    logg l = lift ∘ logg l
+    withLevel level inner = liftWith (\run → withLevel level (run inner)) >>= restoreT ∘ return
+    withLabel label inner = liftWith (\run → withLabel label (run inner)) >>= restoreT ∘ return
+
+    {-# INLINE logg #-}
+    {-# INLINE withLevel #-}
+    {-# INLINE withLabel #-}
+
+instance (MonadLog a m) ⇒ MonadLog a (TraceT t e m) where
+    logg l = lift ∘ logg l
+    withLevel level inner = liftWith (\run → withLevel level (run inner)) >>= restoreT ∘ return
+    withLabel label inner = liftWith (\run → withLabel label (run inner)) >>= restoreT ∘ return
+
+    {-# INLINE logg #-}
+    {-# INLINE withLevel #-}
+    {-# INLINE withLabel #-}
+
+instance (MonadLog a m) ⇒ MonadLog a (EitherT σ m) where
+    logg l = lift ∘ logg l
+    withLevel level inner = liftWith (\run → withLevel level (run inner)) >>= restoreT ∘ return
+    withLabel label inner = liftWith (\run → withLabel label (run inner)) >>= restoreT ∘ return
+
+    {-# INLINE logg #-}
+    {-# INLINE withLevel #-}
+    {-# INLINE withLabel #-}
+
+{-
+-- Uses @OverlappingInstances@ to lift MonadLog in all transformers with an
+-- instance for 'MonadTransControl'.
+--
+instance (MonadLog a m, MonadTransControl t, Monad n, n ~ (t m)) ⇒ MonadLog a n where
+    logg l = lift ∘ logg l
+    withLevel level inner = liftWith (\run → withLevel level (run inner)) >>= restoreT ∘ return
+    withLabel label inner = liftWith (\run → withLabel label (run inner)) >>= restoreT ∘ return
+
+    {-# INLINE logg #-}
+    {-# INLINE withLevel #-}
+    {-# INLINE withLabel #-}
+-}
 
 -- -------------------------------------------------------------------------- --
 -- LoggerT

@@ -78,37 +78,6 @@ For compilation with GHC-7.10 one has to install the `HEAD` versions of
 A build with `-fwith-chart` is not yet supported. You may also have to
 explicitely pass `-f-old-local`.
 
-Scenarios
-=========
-
-We are interested in scenarios like:
-
-> for 10000 enrolled users have each user login, read and email,
-> send an email, and log out with some delay, such that at
-> each time at about 1000 users are concurrently active.
-
-This requires the following prerequesits:
-
-1.  a large enough pool of enrolled users,
-2.  for each user an email message (shall users share email message?), and
-3.  for each user reciepients (are the recipients users that participate in the test?),
-
-There are different ways to implement this:
-
-1.  The email message for reading are pregenerated either
-
-    1. for each user, or
-    2. for groups of users,
-
-2.  Consecutive users read the emails that were written by previous users,
-
-3.  Users can be connected in different graphs, for instance as
-
-    1.  as sets of isolated connected components,
-    2.  as partial order,
-    3.  as tree, or
-    4.  as arbitrary graphs.
-
 Profiling
 =========
 

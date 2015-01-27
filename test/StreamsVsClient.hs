@@ -28,7 +28,7 @@
 -- is larger than the number of cores:
 --
 -- > http-client-local-manager ---\                          /--- http-streamsIORef ---\    /--- http-streams-ioref-no-catchany
--- >                              --- http-streams-mvar ----                           ----
+-- >                               -- http-streams-mvar -----                           ----
 -- > http-client-global-manager --/                          \--- http-streams-state --/    \--- http-streams-mvar-no-catchany
 --
 -- When the number of cores matches the number of concurrent threads the

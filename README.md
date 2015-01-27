@@ -23,6 +23,19 @@ service-benchmark-tool --thread-count=100 --action-count=1500 --url='http://loca
 which will run 100 threads each making 1500 echo request to the echo-service
 using the `http-streams` package as HTTP client backend and loglevel `info`.
 
+For help you may type
+
+```.bash
+service-benchmark-tool --help
+```
+
+The option `-p` can be used to print out the configuration as a configuration file and
+replay a that configuration:
+
+```.bash
+service-benchmark-tool --thread-count=100 -p > config.yml
+service-benchmark-tool --config-file=config.yml
+```
 
 Installation
 ============

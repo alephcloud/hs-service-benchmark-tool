@@ -140,6 +140,8 @@ data MainConfiguration = MainConfiguration
     , _mainConfigUrl ∷ !T.Text
         -- ^ not sure if this is too specific. We may reduce this again later...
     , _mainConfigHttpClient ∷ !HttpClient
+    , _mainConfigHttpResponseTimeout ∷ !(Maybe Int)
+        -- ^ response timeout in microseconds
     }
     deriving (Show, Read, Eq, Ord, Typeable)
 
@@ -158,6 +160,9 @@ mainConfigUrl = lens _mainConfigUrl $ \a b → a { _mainConfigUrl = b }
 mainConfigHttpClient ∷ Lens' MainConfiguration HttpClient
 mainConfigHttpClient = lens _mainConfigHttpClient $ \a b → a { _mainConfigHttpClient = b }
 
+mainConfigHttpResponseTimeout ∷ Lens' MainConfiguration (Maybe Int)
+mainConfigHttpResponseTimeout = lens _mainConfigHttpResponseTimeout $ \a b → a { _mainConfigHttpResponseTimeout = b }
+
 defaultMainConfiguration ∷ MainConfiguration
 defaultMainConfiguration = MainConfiguration
     { _mainConfigTestParams = defaultTestParams
@@ -169,6 +174,7 @@ defaultMainConfiguration = MainConfiguration
 #else
     , _mainConfigHttpClient = HttpClient
 #endif
+    , _mainConfigHttpResponseTimeout = Nothing
     }
 
 validateMainConfiguration ∷ ConfigValidation MainConfiguration λ
@@ -183,6 +189,7 @@ instance ToJSON MainConfiguration where
         , "loglevel" .= _mainConfigLogLevel
         , "url" .= _mainConfigUrl
         , "http_client" .= _mainConfigHttpClient
+        , "http_response_timeout" .= _mainConfigHttpResponseTimeout
         ]
 
 instance FromJSON (MainConfiguration → MainConfiguration) where
@@ -192,6 +199,7 @@ instance FromJSON (MainConfiguration → MainConfiguration) where
         <*< mainConfigLogLevel ..: "loglevel" × o
         <*< mainConfigUrl ..: "url" × o
         <*< mainConfigHttpClient ..: "http_client" × o
+        <*< mainConfigHttpResponseTimeout ..: "http_response_timeout" × o
 
 pMainConfiguration ∷ MParser MainConfiguration
 pMainConfiguration = id
@@ -203,6 +211,11 @@ pMainConfiguration = id
         ⊕ help "url that is used for the tests"
         ⊕ metavar "HTTP_URL"
     <*< mainConfigHttpClient .:: pHttpClient
+    <*< mainConfigHttpResponseTimeout .:: fmap Just × option auto
+        × long "http-response-timeout"
+        ⊕ short 't'
+        ⊕ help "http response timeout value (currently not supported for http-streams)"
+        ⊕ metavar "MICROSECONDS"
 
 -- -------------------------------------------------------------------------- --
 -- Main
@@ -231,11 +244,11 @@ main = runWithPkgInfoConfiguration mainInfo pkgInfo $ \MainConfiguration{..} →
 
             HttpClient →
                 -- http-client, thread-local manager
-                runTest "testname" _mainConfigTestParams $ httpRequestThreadAction _mainConfigUrl
+                runTest "testname" _mainConfigTestParams $ httpRequestThreadAction _mainConfigHttpResponseTimeout _mainConfigUrl
 
             HttpClientGlobalPool →
                 -- http-client, global manager
-                withManager settings $ \mgr →
+                withManager (settings _mainConfigHttpResponseTimeout) $ \mgr →
                     runTest "testname" _mainConfigTestParams $ httpRequestThreadAction' mgr _mainConfigUrl
 
 #ifdef WITH_HTTP_STREAMS
@@ -245,10 +258,10 @@ main = runWithPkgInfoConfiguration mainInfo pkgInfo $ \MainConfiguration{..} →
 #endif
 
   where
-    settings = HTTP.defaultManagerSettings
+    settings timeout = HTTP.defaultManagerSettings
         { HTTP.managerConnCount = 100 -- FIXME (use number of threads + 1)
-        , HTTP.managerResponseTimeout = Nothing
-        -- , HTTP.managerResponseTimeout = Just 5000000
+        -- , HTTP.managerResponseTimeout = Nothing
+        , HTTP.managerResponseTimeout = timeout
         }
 
 -- -------------------------------------------------------------------------- --
@@ -285,20 +298,21 @@ makeRequest mgr _i _j req = do
 --
 httpRequestThreadAction
     ∷ (MonadIO m, MonadBaseControl IO m, MonadLog T.Text m)
-    ⇒ T.Text
+    ⇒ Maybe Int
+        -- ^ http response timeout in microseconds
+    → T.Text
         -- ^ HTTP URL
     → Int
         -- ^ thread id
     → ThreadTestAction m
-httpRequestThreadAction url i f = withLabel ("function","httpRequestThreadAction") $
+httpRequestThreadAction timeout url i f = withLabel ("function","httpRequestThreadAction") $
     withManager settings $ \mgr →
         f $ \j → TestAction $ makeRequest mgr i j req
   where
     -- We give every thread its own connection manager
     settings = HTTP.defaultManagerSettings
         { HTTP.managerConnCount = 2
-        -- , HTTP.managerResponseTimeout = Just 5000000
-        , HTTP.managerResponseTimeout = Nothing
+        , HTTP.managerResponseTimeout = timeout
         }
     req = either (error ∘ show) id ∘ HTTP.parseUrl $ T.unpack url
 

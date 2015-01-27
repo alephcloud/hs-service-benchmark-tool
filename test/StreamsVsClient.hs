@@ -54,6 +54,10 @@ module Main
 ( main
 ) where
 
+#ifndef MIN_VERSION_http_streams
+#define MIN_VERSION_http_streams(x,y,z) 1
+#endif
+
 import Control.Applicative
 import Control.Concurrent
 import Control.Concurrent.Async
@@ -244,16 +248,16 @@ benchmark BenchmarkParams{..} = defaultMain $
       where
         method = if size ≡ 0 then HS.GET else HS.POST
         reqBody = if size ≡ 0 then Nothing else Just (B.take size body)
-    #if MIN_VERSION_http_streams(0,8,0)
+#if MIN_VERSION_http_streams(0,8,0)
         req = HS.buildRequest $ do
             HS.http method path
             HS.setAccept "*/*"
-    #else
+#else
         req = unsafePerformIO ∘ HS.buildRequest $ do
             HS.http method path
             HS.setAccept "*/*"
         {-# NOINLINE req #-}
-    #endif
+#endif
 
 -- -------------------------------------------------------------------------- --
 -- Create Benchmarks

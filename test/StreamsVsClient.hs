@@ -35,6 +35,11 @@
 -- performance of all benchmarks is in the same order with the "no-catchany"
 -- variants somewhat better than all others.
 --
+-- Usage:
+--
+-- > ghc --make -O2 StreamsVsClient.hs -Wall -fforce-recomp -threaded
+-- > ./StreamsVsClient -o StreamsVsClient.html +RTS -N
+--
 
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE FlexibleContexts #-}

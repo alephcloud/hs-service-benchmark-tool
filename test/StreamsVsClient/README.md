@@ -17,14 +17,14 @@ performs the same number of identical synchronous HTTP requests to the same
 HTTP server.
 
 The results of some benchmarks can be viewed rendered as HTML here:
-[https://rawgit.com/larskuhtz/d935b119f8b5790e2cda/raw/results.html](https://rawgit.com/larskuhtz/d935b119f8b5790e2cda/raw/results.html)
+[results.html](test/StreamsVsClient/results.html)
 
 The following benchmarks are obtained with the [faster-timeout branch](https://github.com/snoyberg/http-client/tree/faster-timeout)
 of the [http-client](https://hackage.haskell.org/package/http-client) package.
 Note that all benchmarks are compiled with that branch. The Benchmarks that are labeled
 `http-client-local-manager-no-timeout` use `managerResponseTimeout = Nothing` in `ManagerSettings`.
 
-[https://rawgit.com/larskuhtz/d935b119f8b5790e2cda/raw/results-no-timeout.html](https://rawgit.com/larskuhtz/d935b119f8b5790e2cda/raw/results-no-timeout.html)
+[results-no-timeout.html](test/StreamsVsClient/results-no-timeout.html)
 
 These results may indidcate the issue is not caused by the implementation of
 `timeout` in `System.Timeout` but is sitting deeper somewhere in
@@ -70,16 +70,16 @@ Code
 ----
 
 The
-[code](https://gist.github.com/larskuhtz/d935b119f8b5790e2cda#file-streamsvsclient-hs)
+[code](https://github.com/alephcloud/hs-service-benchmark-tool/blob/master/test/StreamsVsClient/StreamsVsClient.hs)
 is compiled with
 
-```.bash
-ghc --make -O2 StreamsVsClient.hs -D'MIN_VERSION_http_streams(x,y,z)=1' -Wall -fforce-recomp -threaded
-```
+{% highlight bash %}
+ghc --make -O2 StreamsVsClient.hs -Wall -fforce-recomp -threaded
+{% endhighlight %}
 
 and executed as
 
-```.bash
+{% highlight bash %}
 ./StreamsVsClient -o results.html +RTS -N
-```
+{% endhighlight %}
 

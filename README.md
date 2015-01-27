@@ -109,3 +109,38 @@ There are different ways to implement this:
     3.  as tree, or
     4.  as arbitrary graphs.
 
+Profiling
+=========
+
+```.bash
+cabal install --enable-profiling --ghc-option=-auto-all
+```
+
+Then run the program with `+RTS -prof` as show in this example:
+
+```.bash
+./dist/build/service-benchmark-tool/service-benchmark-tool --thread-count=50 --action-count=1000 --url='http://127.0.0.1:8282' --http-client=http-client --loglevel=info +RTS -prof -N8
+```
+
+Note that there is a bug in GHC that causes the flag `-N` without argument to
+have no effect with the threaded runtime.
+
+ThreadScope
+-----------
+
+In order to collect event logs the application must be compiled with profiling
+disabled:
+
+```.bash
+cabal install --constraint='http-client>=0.4.7' --ghc-option='-eventlog' --ghc-option='-rtsopts' --disable-profiling --disable-library-profiling
+```
+
+Eventlogs can be obtained by running the application with +RTS -ls as show in
+the following example:
+
+```.bash
+ ./dist/build/service-benchmark-tool/service-benchmark-tool --thread-count=32 --action-count=1000 --url='http://127.0.0.1:8282' --http-client=http-client --loglevel=info -t 50000000  +RTS -ls -N8
+```
+
+This will result in a file called `service-benchmark-tool.eventlog` in the
+working directory. This file can be opend and analyzed with ThreadScope.

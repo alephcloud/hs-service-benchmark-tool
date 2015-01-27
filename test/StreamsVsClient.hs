@@ -308,9 +308,9 @@ check c x = runExceptT x >>= \r →
 --
 benchHttpStreamsMVar
     ∷ Int
-        -- ^ number of threads
-    → Int
         -- ^ number requests per thread
+    → Int
+        -- ^ number of threads
     → (B8.ByteString, Word16, HS.Request, Maybe B8.ByteString)
     → IO ()
 benchHttpStreamsMVar n p (host, port, req, body) = void ∘ mapConcurrently run $ replicate p req
@@ -322,9 +322,9 @@ benchHttpStreamsMVar n p (host, port, req, body) = void ∘ mapConcurrently run 
 --
 benchHttpStreamsMVarNoCatchAny
     ∷ Int
-        -- ^ number of threads
-    → Int
         -- ^ number requests per thread
+    → Int
+        -- ^ number of threads
     → (B8.ByteString, Word16, HS.Request, Maybe B8.ByteString)
     → IO ()
 benchHttpStreamsMVarNoCatchAny n p (host, port, req, body) = void ∘ mapConcurrently run $ replicate p req
@@ -336,9 +336,9 @@ benchHttpStreamsMVarNoCatchAny n p (host, port, req, body) = void ∘ mapConcurr
 --
 benchHttpStreamsIORef
     ∷ Int
-        -- ^ number of threads
-    → Int
         -- ^ number requests per thread
+    → Int
+        -- ^ number of threads
     → (B8.ByteString, Word16, HS.Request, Maybe B8.ByteString)
     → IO ()
 benchHttpStreamsIORef n p (host, port, req, body) = void ∘ mapConcurrently run $ replicate p req
@@ -350,9 +350,9 @@ benchHttpStreamsIORef n p (host, port, req, body) = void ∘ mapConcurrently run
 --
 benchHttpStreamsIORefNoCatchAny
     ∷ Int
-        -- ^ number of threads
-    → Int
         -- ^ number requests per thread
+    → Int
+        -- ^ number of threads
     → (B8.ByteString, Word16, HS.Request, Maybe B8.ByteString)
     → IO ()
 benchHttpStreamsIORefNoCatchAny n p (host, port, req, body) = void ∘ mapConcurrently run $ replicate p req
@@ -364,9 +364,9 @@ benchHttpStreamsIORefNoCatchAny n p (host, port, req, body) = void ∘ mapConcur
 --
 benchHttpStreamsState
     ∷ Int
-        -- ^ number of threads
-    → Int
         -- ^ number requests per thread
+    → Int
+        -- ^ number of threads
     → (B8.ByteString, Word16, HS.Request, Maybe B8.ByteString)
     → IO ()
 benchHttpStreamsState n p (host, port, req, body) = void ∘ mapConcurrently run $ replicate p req
@@ -382,9 +382,9 @@ benchHttpStreamsState n p (host, port, req, body) = void ∘ mapConcurrently run
 --
 benchHttpClient
     ∷ Int
-        -- ^ number of threads
-    → Int
         -- ^ number requests per thread
+    → Int
+        -- ^ number of threads
     → HTTP.Request
     → IO ()
 benchHttpClient n p = void ∘ mapConcurrently run ∘ replicate p
@@ -418,9 +418,9 @@ benchHttpClientNoTimeout n p = void ∘ mapConcurrently run ∘ replicate p
 --
 benchHttpClient2
     ∷ Int
-        -- ^ number of threads
-    → Int
         -- ^ number requests per thread
+    → Int
+        -- ^ number of threads
     → HTTP.Request → IO ()
 benchHttpClient2 n p req = HTTP.withManager settings $ \mgr →
     void ∘ mapConcurrently (run mgr) $ replicate p req

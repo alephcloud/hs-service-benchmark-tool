@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="hs-service-benchmark-tool : Tools for benchmarking services">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>hs-service-benchmark-tool</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/alephcloud/hs-service-benchmark-tool">View on GitHub</a>
+
+          <h1 id="project_title">hs-service-benchmark-tool</h1>
+          <h2 id="project_tagline">Tools for benchmarking services</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/alephcloud/hs-service-benchmark-tool/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/alephcloud/hs-service-benchmark-tool/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h1>
+
+<p>Build and install the tool with</p>
+
+<div class="highlight highlight-bash"><pre>cabal install</pre></div>
+
+<p>For a simple example, essentially benchmarking the tool itself, first build and
+run the simple test server (from <code>main/Main.hs</code>)</p>
+
+<div class="highlight highlight-bash"><pre>echos-service</pre></div>
+
+<p>and in another terminal run</p>
+
+<div class="highlight highlight-bash"><pre>service-benchmark-tool --thread-count=100 --action-count=1500 --url=<span class="pl-s1"><span class="pl-pds">'</span>http://localhost:8282/echo<span class="pl-pds">'</span></span> --http-client=http-streams --loglevel=info</pre></div>
+
+<p>which will run 100 threads each making 1500 echo request to the echo-service
+using the <code>http-streams</code> package as HTTP client backend and loglevel <code>info</code>.</p>
+
+<p>For help you may type</p>
+
+<div class="highlight highlight-bash"><pre>service-benchmark-tool --help</pre></div>
+
+<p>The option <code>-p</code> can be used to print out the configuration as a configuration file and
+replay a that configuration:</p>
+
+<div class="highlight highlight-bash"><pre>service-benchmark-tool --thread-count=100 -p <span class="pl-k">&gt;</span> config.yml
+service-benchmark-tool --config-file=config.yml</pre></div>
+
+<h1>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h1>
+
+<h2>
+<a id="installation-with-chart-support" class="anchor" href="#installation-with-chart-support" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation with Chart Support</h2>
+
+<p>Install chart-cairo:</p>
+
+<div class="highlight highlight-bash"><pre>cabal install alex
+cabal install gtk2hs-buildtools</pre></div>
+
+<p>On Mac OS X with homebrew you must do</p>
+
+<div class="highlight highlight-bash"><pre><span class="pl-s">export</span> PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig:<span class="pl-vo">$PKG_CONFIG_PATH</span></pre></div>
+
+<p>and then</p>
+
+<div class="highlight highlight-bash"><pre>cabal install chart-cairo</pre></div>
+
+<p>Now you can install the package with:</p>
+
+<div class="highlight highlight-bash"><pre>cabal configure -fwith-chart
+cabal install</pre></div>
+
+<h2>
+<a id="ghc-710" class="anchor" href="#ghc-710" aria-hidden="true"><span class="octicon octicon-link"></span></a>GHC-7.10</h2>
+
+<p>For compilation with GHC-7.10 one has to install the <code>HEAD</code> versions of
+<code>master</code> of <code>http-common</code> and <code>http-streams</code> from GitHub.</p>
+
+<p>A build with <code>-fwith-chart</code> is not yet supported. You may also have to
+explicitely pass <code>-f-old-local</code>.</p>
+
+<h1>
+<a id="scenarios" class="anchor" href="#scenarios" aria-hidden="true"><span class="octicon octicon-link"></span></a>Scenarios</h1>
+
+<p>We are interested in scenarios like:</p>
+
+<blockquote>
+<p>for 10000 enrolled users have each user login, read and email,
+send an email, and log out with some delay, such that at
+each time at about 1000 users are concurrently active.</p>
+</blockquote>
+
+<p>This requires the following prerequesits:</p>
+
+<ol>
+<li> a large enough pool of enrolled users,</li>
+<li> for each user an email message (shall users share email message?), and</li>
+<li> for each user reciepients (are the recipients users that participate in the test?),</li>
+</ol>
+
+<p>There are different ways to implement this:</p>
+
+<ol>
+<li>
+<p>The email message for reading are pregenerated either</p>
+
+<ol>
+<li>for each user, or</li>
+<li>for groups of users,</li>
+</ol>
+</li>
+<li><p>Consecutive users read the emails that were written by previous users,</p></li>
+<li>
+<p>Users can be connected in different graphs, for instance as</p>
+
+<ol>
+<li> as sets of isolated connected components,</li>
+<li> as partial order,</li>
+<li> as tree, or</li>
+<li> as arbitrary graphs.</li>
+</ol>
+</li>
+</ol>
+
+<h1>
+<a id="profiling" class="anchor" href="#profiling" aria-hidden="true"><span class="octicon octicon-link"></span></a>Profiling</h1>
+
+<div class="highlight highlight-bash"><pre>cabal install --enable-profiling --ghc-option=-auto-all</pre></div>
+
+<p>Then run the program with <code>+RTS -prof</code> as show in this example:</p>
+
+<div class="highlight highlight-bash"><pre>./dist/build/service-benchmark-tool/service-benchmark-tool --thread-count=50 --action-count=1000 --url=<span class="pl-s1"><span class="pl-pds">'</span>http://127.0.0.1:8282<span class="pl-pds">'</span></span> --http-client=http-client --loglevel=info +RTS -prof -N8</pre></div>
+
+<p>Note that there is a bug in GHC that causes the flag <code>-N</code> without argument to
+have no effect with the threaded runtime.</p>
+
+<h2>
+<a id="threadscope" class="anchor" href="#threadscope" aria-hidden="true"><span class="octicon octicon-link"></span></a>ThreadScope</h2>
+
+<p>In order to collect event logs the application must be compiled with profiling
+disabled:</p>
+
+<div class="highlight highlight-bash"><pre>cabal install --constraint=<span class="pl-s1"><span class="pl-pds">'</span>http-client&gt;=0.4.7<span class="pl-pds">'</span></span> --ghc-option=<span class="pl-s1"><span class="pl-pds">'</span>-eventlog<span class="pl-pds">'</span></span> --ghc-option=<span class="pl-s1"><span class="pl-pds">'</span>-rtsopts<span class="pl-pds">'</span></span> --disable-profiling --disable-library-profiling</pre></div>
+
+<p>Eventlogs can be obtained by running the application with +RTS -ls as show in
+the following example:</p>
+
+<div class="highlight highlight-bash"><pre> ./dist/build/service-benchmark-tool/service-benchmark-tool --thread-count=32 --action-count=1000 --url=<span class="pl-s1"><span class="pl-pds">'</span>http://127.0.0.1:8282<span class="pl-pds">'</span></span> --http-client=http-client --loglevel=info -t 50000000  +RTS -ls -N8</pre></div>
+
+<p>This will result in a file called <code>service-benchmark-tool.eventlog</code> in the
+working directory. This file can be opend and analyzed with ThreadScope.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">hs-service-benchmark-tool maintained by <a href="https://github.com/alephcloud">alephcloud</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>

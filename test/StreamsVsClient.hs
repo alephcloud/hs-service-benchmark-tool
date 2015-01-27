@@ -204,7 +204,7 @@ main = do
         -- , _bparamsThreadsN = [128]
         , _bparamsTypes = [HttpClientGlobalManager, HttpClientLocalManager, HttpStreamsMVar, HttpStreamsIORef]
         -- , _bparamsTypes = [HttpClientGlobalManager, HttpClientLocalManager, HttpStreamsMVar, HttpStreamsIORef, HttpStreamsIORefNoCatchAny]
-        , _bparamsUrl = "http://localhost:8282"
+        , _bparamsUrl = "http://127.0.0.1:8282"
         }
     withWarp = True
 

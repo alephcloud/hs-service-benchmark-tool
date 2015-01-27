@@ -200,9 +200,10 @@ main = do
     params = BenchmarkParams
         { _bparamsRequestSize = [0]
         , _bparamsTotalRequestsN = [4096]
-        , _bparamsThreadsN = [1,2,4,8,16,32,64]
+        , _bparamsThreadsN = [1,2,4,8,16,64]
         -- , _bparamsThreadsN = [128]
-        , _bparamsTypes = [HttpClientGlobalManager, HttpClientLocalManager, HttpStreamsMVar, HttpStreamsIORef]
+        , _bparamsTypes = [HttpClientLocalManager, HttpClientLocalManagerNoTimeout, HttpStreamsIORef, HttpStreamsIORefNoCatchAny]
+        -- , _bparamsTypes = [HttpClientGlobalManager, HttpClientLocalManager, HttpStreamsMVar, HttpStreamsIORef]
         -- , _bparamsTypes = [HttpClientGlobalManager, HttpClientLocalManager, HttpStreamsMVar, HttpStreamsIORef, HttpStreamsIORefNoCatchAny]
         , _bparamsUrl = "http://127.0.0.1:8282"
         }

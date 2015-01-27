@@ -32,6 +32,13 @@
 -- *all* threads, whereas, to the best of my knowledge, the call to timeout
 -- only requires synchronization between all threads on the same capability.
 --
+-- Here are the results: <<Timeout.html>>
+--
+-- Usage:
+--
+-- > ghc --make -threaded Timeout.hs -rtsopts -O -fforce-recomp -Wall
+-- > ./Timeout -o Timeout.html +RTS -N8
+--
 module Main
 ( main
 ) where

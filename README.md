@@ -8,39 +8,39 @@ Usage
 
 Build and install the tool with
 
-```.bash
+{% highlight bash %}
 cabal install
-```
+{% endhighlight %}
 
 For a simple example, essentially benchmarking the tool itself, first build and
 run the simple test server (from `main/Main.hs`)
 
-```.bash
+{% highlight bash %}
 echos-service
-```
+{% endhighlight %}
 
 and in another terminal run
 
-```.bash
+{% highlight bash %}
 service-benchmark-tool --thread-count=100 --action-count=1500 --url='http://localhost:8282/echo' --http-client=http-streams --loglevel=info
-```
+{% endhighlight %}
 
 which will run 100 threads each making 1500 echo request to the echo-service
 using the `http-streams` package as HTTP client backend and loglevel `info`.
 
 For help you may type
 
-```.bash
+{% highlight bash %}
 service-benchmark-tool --help
-```
+{% endhighlight %}
 
 The option `-p` can be used to print out the configuration as a configuration file and
 replay a that configuration:
 
-```.bash
+{% highlight bash %}
 service-benchmark-tool --thread-count=100 -p > config.yml
 service-benchmark-tool --config-file=config.yml
-```
+{% endhighlight %}
 
 Installation
 ============
@@ -50,29 +50,29 @@ Installation with Chart Support
 
 Install chart-cairo:
 
-```.bash
+{% highlight bash %}
 cabal install alex
 cabal install gtk2hs-buildtools
-```
+{% endhighlight %}
 
 On Mac OS X with homebrew you must do
 
-```.bash
+{% highlight bash %}
 export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig:$PKG_CONFIG_PATH
-```
+{% endhighlight %}
 
 and then
 
-```.bash
+{% highlight bash %}
 cabal install chart-cairo
-```
+{% endhighlight %}
 
 Now you can install the package with:
 
-```.bash
+{% highlight bash %}
 cabal configure -fwith-chart
 cabal install
-```
+{% endhighlight %}
 
 GHC-7.10
 --------
@@ -117,15 +117,15 @@ There are different ways to implement this:
 Profiling
 =========
 
-```.bash
+{% highlight bash %}
 cabal install --enable-profiling --ghc-option=-auto-all
-```
+{% endhighlight %}
 
 Then run the program with `+RTS -prof` as show in this example:
 
-```.bash
+{% highlight bash %}
 ./dist/build/service-benchmark-tool/service-benchmark-tool --thread-count=50 --action-count=1000 --url='http://127.0.0.1:8282' --http-client=http-client --loglevel=info +RTS -prof -N8
-```
+{% endhighlight %}
 
 Note that there is a bug in GHC that causes the flag `-N` without argument to
 have no effect with the threaded runtime.
@@ -136,16 +136,16 @@ ThreadScope
 In order to collect event logs the application must be compiled with profiling
 disabled:
 
-```.bash
+{% highlight bash %}
 cabal install --constraint='http-client>=0.4.7' --ghc-option='-eventlog' --ghc-option='-rtsopts' --disable-profiling --disable-library-profiling
-```
+{% endhighlight %}
 
 Eventlogs can be obtained by running the application with +RTS -ls as show in
 the following example:
 
-```.bash
+{% highlight bash %}
  ./dist/build/service-benchmark-tool/service-benchmark-tool --thread-count=32 --action-count=1000 --url='http://127.0.0.1:8282' --http-client=http-client --loglevel=info -t 50000000  +RTS -ls -N8
-```
+{% endhighlight %}
 
 This will result in a file called `service-benchmark-tool.eventlog` in the
 working directory. This file can be opend and analyzed with ThreadScope.

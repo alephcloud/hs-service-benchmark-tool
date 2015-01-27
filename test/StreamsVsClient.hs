@@ -101,6 +101,7 @@ server port = WARP.run port $ \req respond → do
 
 data BenchmarkType
     = HttpClientLocalManager
+    | HttpClientLocalManagerNoTimeout
     | HttpClientGlobalManager
     | HttpStreamsMVar
     | HttpStreamsMVarNoCatchAny
@@ -114,6 +115,7 @@ benchmarkTypeText
     ⇒ BenchmarkType
     → s
 benchmarkTypeText HttpClientLocalManager = "http-client-local-manager"
+benchmarkTypeText HttpClientLocalManagerNoTimeout = "http-client-local-manager-no-timeout"
 benchmarkTypeText HttpClientGlobalManager = "http-client-global-manager"
 benchmarkTypeText HttpStreamsMVar = "http-streams-mvar"
 benchmarkTypeText HttpStreamsMVarNoCatchAny = "http-streams-mvar-no-catchany"
@@ -151,6 +153,7 @@ data BenchmarkParams = BenchmarkParams
 benchmarksAll ∷ [BenchmarkType]
 benchmarksAll =
     [ HttpClientLocalManager
+    , HttpClientLocalManagerNoTimeout
     , HttpClientGlobalManager
     , HttpStreamsMVar
     , HttpStreamsMVarNoCatchAny
@@ -162,6 +165,7 @@ benchmarksAll =
 benchmarksHttpClient ∷ [BenchmarkType]
 benchmarksHttpClient =
     [ HttpClientLocalManager
+    , HttpClientLocalManagerNoTimeout
     , HttpClientGlobalManager
     ]
 
@@ -261,6 +265,7 @@ createBenchmark
     → Benchmark
 createBenchmark httpClientReq httpStreamsReq typ reqN threadN size = case typ of
         HttpClientLocalManager → bcClient benchHttpClient
+        HttpClientLocalManagerNoTimeout → bcClient benchHttpClientNoTimeout
         HttpClientGlobalManager → bcClient benchHttpClient2
         HttpStreamsMVar → bcStreams benchHttpStreamsMVar
         HttpStreamsMVarNoCatchAny → bcStreams benchHttpStreamsMVarNoCatchAny
@@ -391,6 +396,24 @@ benchHttpClient n p = void ∘ mapConcurrently run ∘ replicate p
         , HTTP.managerConnCount = 1
         }
 
+-- | http-client with thread local manager
+--
+benchHttpClientNoTimeout
+    ∷ Int
+        -- ^ number requests per thread
+    → Int
+        -- ^ number of threads
+    → HTTP.Request
+    → IO ()
+benchHttpClientNoTimeout n p = void ∘ mapConcurrently run ∘ replicate p
+  where
+    run req = HTTP.withManager settings $ \mgr → replicateM_ n ∘ check isRight $
+        httpClientRequest mgr req
+    settings = HTTP.defaultManagerSettings
+        { HTTP.managerResponseTimeout = Nothing
+        , HTTP.managerConnCount = 1
+        }
+
 -- | http-client global manager
 --
 benchHttpClient2
@@ -404,7 +427,8 @@ benchHttpClient2 n p req = HTTP.withManager settings $ \mgr →
   where
     run mgr = replicateM_ n ∘ check isRight ∘ httpClientRequest mgr
     settings = HTTP.defaultManagerSettings
-        { HTTP.managerResponseTimeout = Just 5000000
+        -- { HTTP.managerResponseTimeout = Just 5000000
+        { HTTP.managerResponseTimeout = Nothing
         , HTTP.managerConnCount = p
         }
 

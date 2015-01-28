@@ -54,6 +54,8 @@
 --
 -- Here are the results: <<Timeout.html>>
 --
+-- I wonder how the observed behavior relates to <<https://ghc.haskell.org/trac/ghc/ticket/3838>>.
+--
 -- Usage:
 --
 -- > ghc --make -threaded Timeout.hs -rtsopts -O -fforce-recomp -Wall

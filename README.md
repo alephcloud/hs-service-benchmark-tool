@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/alephcloud/hs-service-benchmark-tool.svg)](https://travis-ci.org/alephcloud/hs-service-benchmark-tool)
 
+[project site](http://alephcloud.github.io/hs-service-benchmark-tool/)
+
 Usage
 =====
 

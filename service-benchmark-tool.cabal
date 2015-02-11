@@ -1,5 +1,5 @@
 Name: service-benchmark-tool
-Version: 0.0.1
+Version: 0.1
 Synopsis: Tools for benchmarking services over a network connection
 Description: Tools for benchmarking services over a network connectyion
 Homepage: https://github.com/alephcloud/hs-service-benchmark-tool
@@ -26,7 +26,7 @@ source-repository head
 source-repository this
     type: git
     location: https://github.com/alephcloud/hs-service-benchmark-tool
-    branch: master
+    tag: 0.1
 
 Flag with-chart
     Description: Build applications with support for printing charts.
@@ -44,9 +44,7 @@ Library
 
     exposed-modules:
         Network.Benchmark
-        Network.Benchmark.Logger
         Network.Benchmark.Utils
-        Network.Benchmark.ColorOption
 
     build-depends:
         async >= 2.0,
@@ -79,7 +77,8 @@ Library
         trace >= 0.1,
         transformers >= 0.3,
         vector >= 0.10,
-        vector-space >= 0.8
+        vector-space >= 0.8,
+        yet-another-logger >= 0.0
 
     if flag(with-chart)
         build-depends:
@@ -112,7 +111,8 @@ Executable service-benchmark-tool
         optparse-applicative >= 0.11,
         service-benchmark-tool,
         text >= 1.2,
-        transformers >= 0.3
+        transformers >= 0.3,
+        yet-another-logger >= 0.0
 
     if flag(with-http-streams)
         cpp-options: -DWITH_HTTP_STREAMS
@@ -169,6 +169,7 @@ Executable example-server
         optparse-applicative >= 0.11,
         scotty >= 0.9.1,
         text >= 1.2,
-        transformers >= 0.4
+        transformers >= 0.4,
+        yet-another-logger >= 0.0
 
     ghc-options: -Wall -threaded -O2 -with-rtsopts=-N

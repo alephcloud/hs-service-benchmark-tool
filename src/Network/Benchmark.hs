@@ -142,17 +142,16 @@ runAction
     ⇒ Stat
     → TestAction
     → m Stat
-runAction stat action = timeT run >>= \case
-    (t, Right ()) →
-        return $ seq stat $ stat ⊕ successStat (toSeconds t * 1000)
-    (t, Left e) →
-        return $ seq stat $ stat ⊕ failStat (toSeconds t * 1000) (sshow e)
+runAction stat action = withLabel ("function", "runAction") $ do
+    (t, result) ← timeT $ runExceptT run
+    return ∘ seq stat ∘ (stat ⊕) $
+        case result of
+            Right () → successStat $ toSeconds t * 1000
+            Left e → failStat (toSeconds t * 1000) (sshow e)
   where
-    run ∷ m (Either TestException ())
-    run = runExceptT $
-        withLabel ("function","runAction") $
-            withExceptT TestException (runTestAction action)
-            `catchAny` (throwError ∘ UnexpectedException)
+    run ∷ ExceptT TestException m ()
+    run = withExceptT TestException (runTestAction action)
+        `catchAny` (throwError ∘ UnexpectedException)
 {-# INLINEABLE runAction #-}
 
 -- TODO add support for delay

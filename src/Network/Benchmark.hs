@@ -142,7 +142,7 @@ runAction
     → Stat
     → TestAction
     → m Stat
-runAction retries stat action = withLabel ("function", "runAction") $ do
+runAction retries stat action = do
     (t, result) ← timeT $ runEitherT run
     return ∘ seq stat ∘ (stat ⊕) $
         case result of
@@ -150,7 +150,7 @@ runAction retries stat action = withLabel ("function", "runAction") $ do
             Left e → failStat (toSeconds t * 1000) (sshow e)
   where
     run ∷ EitherT TestException m ()
-    run = retryT retries $
+    run = withLabel ("function", "runAction") ∘ retryT retries $
         fmapLT TestException (runTestAction action)
             `catchAny` (throwError ∘ UnexpectedException)
 {-# INLINEABLE runAction #-}

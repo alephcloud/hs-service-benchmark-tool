@@ -78,10 +78,11 @@ import Data.Typeable
 
 import Prelude.Unicode
 
+import System.Logger
+
 -- internal modules
 
 import Network.Benchmark.Utils
-import Network.Benchmark.Logger
 
 -- -------------------------------------------------------------------------- --
 -- Running Tests

@@ -68,6 +68,9 @@ import qualified Options.Applicative as O
 
 import Prelude.Unicode
 
+import System.Logger
+import System.Logger.Backend.ColorOption
+
 #ifdef WITH_HTTP_STREAMS
 -- http-streams
 import qualified "http-streams" Network.Http.Client as HS
@@ -77,9 +80,7 @@ import qualified System.IO.Streams as HS
 -- internal modules
 
 import Network.Benchmark
-import Network.Benchmark.Logger
 import Network.Benchmark.Utils
-import Network.Benchmark.ColorOption
 
 import PkgInfo
 
@@ -228,18 +229,8 @@ mainInfo = programInfoValidate
     validateMainConfiguration
 
 main ∷ IO ()
-main = runWithPkgInfoConfiguration mainInfo pkgInfo $ \MainConfiguration{..} → do
-
-    let backend = handleLoggerBackend defaultLoggerBackendConfig
-            { _loggerBackendConfigHandle = StdOut
-            , _loggerBackendConfigColor = _mainConfigColor
-            }
-        loggerConfig = defaultLoggerConfig
-            { _loggerConfigThreshold = _mainConfigLogLevel
-            }
-
-    withLoggerCtx loggerConfig backend $ flip runLoggerT $
-
+main = runWithPkgInfoConfiguration mainInfo pkgInfo $ \mainConfig@MainConfiguration{..} →
+    withHandleLogger mainConfig $
         case _mainConfigHttpClient of
 
             HttpClient →
@@ -258,6 +249,15 @@ main = runWithPkgInfoConfiguration mainInfo pkgInfo $ \MainConfiguration{..} →
 #endif
 
   where
+    withHandleLogger MainConfiguration{..} inner = do
+        let logConfig = defaultLogConfig
+                & logConfigLogger ∘ loggerConfigThreshold .~ _mainConfigLogLevel
+                & logConfigBackend ∘ handleBackendConfigHandle .~ StdOut
+                & logConfigBackend ∘ handleBackendConfigColor .~ _mainConfigColor
+
+        withHandleBackend (logConfig ^. logConfigBackend) $ \backend →
+            withLogger (logConfig ^. logConfigLogger) backend $ runLoggerT inner
+
     settings timeout = HTTP.defaultManagerSettings
         { HTTP.managerConnCount = 100 -- FIXME (use number of threads + 1)
         -- , HTTP.managerResponseTimeout = Nothing

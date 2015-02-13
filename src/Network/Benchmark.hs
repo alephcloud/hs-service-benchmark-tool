@@ -67,9 +67,10 @@ import Control.Lens hiding ((.=))
 import Control.Monad
 import Control.Monad.Reader
 import Control.Monad.Error.Class
-import Control.Monad.Except
 import Control.Monad.Trans.Control
+import Control.Monad.Trans.Either
 
+import Data.EitherR
 import Data.Monoid
 import Data.Monoid.Unicode
 import qualified Data.Text as T
@@ -126,12 +127,10 @@ runThread
     → ThreadTestAction m
     → m Stat
 runThread TestParams{..} provideActions = provideActions $ \action →
-    foldM runAction mempty $
+    foldM (runAction _paramRetryCount) mempty $
         action <$> [0 .. _paramActionCount - 1]
 {-# INLINEABLE runThread #-}
 
--- | TODO add support for retry
---
 runAction
     ∷ ∀ m .
         ( Functor m
@@ -139,19 +138,20 @@ runAction
         , MonadBaseControl IO m
         , MonadIO m
         )
-    ⇒ Stat
+    ⇒ Int -- ^ number of retries
+    → Stat
     → TestAction
     → m Stat
-runAction stat action = timeT run >>= \case
-    (t, Right ()) →
-        return $ seq stat $ stat ⊕ successStat (toSeconds t * 1000)
-    (t, Left e) →
-        return $ seq stat $ stat ⊕ failStat (toSeconds t * 1000) (sshow e)
+runAction retries stat action = do
+    (t, result) ← timeT $ runEitherT run
+    return ∘ seq stat ∘ (stat ⊕) $
+        case result of
+            Right () → successStat $ toSeconds t * 1000
+            Left e → failStat (toSeconds t * 1000) (sshow e)
   where
-    run ∷ m (Either TestException ())
-    run = runExceptT $
-        withLabel ("function","runAction") $
-            withExceptT TestException (runTestAction action)
+    run ∷ EitherT TestException m ()
+    run = withLabel ("function", "runAction") ∘ retryT retries $
+        fmapLT TestException (runTestAction action)
             `catchAny` (throwError ∘ UnexpectedException)
 {-# INLINEABLE runAction #-}
 

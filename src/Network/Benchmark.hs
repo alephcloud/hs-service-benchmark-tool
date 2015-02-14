@@ -61,6 +61,7 @@ module Network.Benchmark
 import Configuration.Utils hiding (Lens', Lens, action)
 import Configuration.Utils.Validation
 
+import Control.Concurrent.Lifted (threadDelay)
 import Control.Concurrent.Async.Lifted
 import Control.Exception.Enclosed
 import Control.Lens hiding ((.=))
@@ -155,8 +156,6 @@ runAction retries stat action = do
             `catchAny` (throwError ∘ UnexpectedException)
 {-# INLINEABLE runAction #-}
 
--- TODO add support for delay
---
 runTest
     ∷ (MonadIO m, MonadBaseControl IO m, MonadLog T.Text m)
     ⇒ T.Text
@@ -168,8 +167,13 @@ runTest
     → m ()
 runTest testName params@TestParams{..} threadAction = do
     logg Info $ "Start test \"" ⊕ testName ⊕ "\""
-    (t, stats) ← timeT $
-        mapConcurrently (runThread params) $ threadAction <$> [0 .. _paramThreadCount - 1]
+
+    let runThreadWithDelay (i, action) = do
+            threadDelay $ i * _paramThreadDelay * 1000
+            runThread params action
+
+    (t, stats) ← timeT ∘ mapConcurrently runThreadWithDelay $
+        (\i → (i, threadAction i)) <$> [0 .. _paramThreadCount - 1]
 
     -- report results
     let stat = mconcat stats
